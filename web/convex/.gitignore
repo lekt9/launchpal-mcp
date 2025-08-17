@@ -1,6 +1,3 @@
-# Convex generated files
-_generated/
-
 # Environment files
 .env
 .env.local
