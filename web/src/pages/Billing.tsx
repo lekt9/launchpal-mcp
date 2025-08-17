@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useAction } from 'convex/react'
-import { api } from '../../../convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card'
 import { Check, Zap, Rocket, Crown } from 'lucide-react'
