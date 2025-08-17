@@ -1,0 +1,64 @@
+name: launchpal-mcp
+version: 2.0.0
+description: MCP server for LaunchPal - automate product launches across multiple platforms
+author: LaunchPal
+license: MIT
+
+# Build configuration
+build:
+  type: docker
+  dockerfile: Dockerfile
+
+# Server metadata
+server:
+  protocol: mcp
+  transport: stdio
+  
+# Capabilities
+capabilities:
+  tools:
+    - authenticate
+    - connect_platform
+    - list_platforms
+    - create_product
+    - schedule_launch
+    - get_launch_metrics
+    - get_trending
+    - check_usage
+  prompts:
+    - launch_strategy
+
+# Environment variables
+environment:
+  - name: LAUNCHPAL_API_KEY
+    description: Your LaunchPal API key for authentication
+    required: false
+  - name: CONVEX_URL
+    description: Convex backend URL (defaults to https://launch.convex.cloud)
+    required: false
+  - name: LAUNCHPAL_API_URL
+    description: LaunchPal API URL (defaults to https://launch.getfoundry.app)
+    required: false
+  - name: DEBUG
+    description: Enable debug mode (true/false)
+    required: false
+
+# Documentation
+readme: |
+  # LaunchPal MCP Server
+  
+  Automate product launches across multiple platforms including Product Hunt, Hacker News, Reddit, and Indie Hackers.
+  
+  ## Features
+  - Authenticate with LaunchPal API
+  - Connect multiple launch platforms
+  - Create and schedule product launches
+  - Track launch metrics and performance
+  - Get trending products from platforms
+  - Monitor API usage and limits
+  
+  ## Setup
+  1. Get your LaunchPal API key from https://launch.getfoundry.app
+  2. Set the LAUNCHPAL_API_KEY environment variable
+  3. Connect to your preferred launch platforms
+  4. Start creating and scheduling launches!

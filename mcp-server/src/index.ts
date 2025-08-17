@@ -10,7 +10,6 @@ import {
   McpError
 } from '@modelcontextprotocol/sdk/types.js';
 import { ConvexHttpClient } from 'convex/browser';
-import { api } from '../../convex/_generated/api.js';
 import axios from 'axios';
 import { z } from 'zod';
 import dotenv from 'dotenv';
