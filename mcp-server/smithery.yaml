@@ -1,0 +1,4 @@
+version: 1
+start:
+  command: ["node", "/app/dist/src/index.js"]
+  port: 8000

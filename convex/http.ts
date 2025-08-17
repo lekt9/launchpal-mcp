@@ -3,6 +3,7 @@ import { httpAction } from "./_generated/server";
 import { Hono } from "hono";
 import type { Context } from "hono";
 import { cors } from "hono/cors";
+import { auth } from "./auth";
 
 const app = new Hono();
 
@@ -163,8 +164,12 @@ function generateToken(): string {
 
 const http = httpRouter();
 
+// Add Convex Auth routes
+auth.addHttpRoutes(http);
+
+// Add custom API routes
 http.route({
-  path: "/*",
+  path: "/api/*",
   method: "GET",
   handler: httpAction(async (_ctx, request) => {
     const response = await app.fetch(request);
@@ -173,8 +178,35 @@ http.route({
 });
 
 http.route({
-  path: "/*",
+  path: "/api/*",
   method: "POST",
+  handler: httpAction(async (_ctx, request) => {
+    const response = await app.fetch(request);
+    return response;
+  })
+});
+
+http.route({
+  path: "/oauth/*",
+  method: "GET",
+  handler: httpAction(async (_ctx, request) => {
+    const response = await app.fetch(request);
+    return response;
+  })
+});
+
+http.route({
+  path: "/oauth/*",
+  method: "POST",
+  handler: httpAction(async (_ctx, request) => {
+    const response = await app.fetch(request);
+    return response;
+  })
+});
+
+http.route({
+  path: "/.well-known/*",
+  method: "GET",
   handler: httpAction(async (_ctx, request) => {
     const response = await app.fetch(request);
     return response;
