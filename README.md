@@ -1,283 +1,254 @@
-# LaunchPal MCP Server
+# LaunchPal - Multi-Platform Launch Automation System
 
-A comprehensive MCP (Model Context Protocol) server for automating Product Hunt launches with advanced image processing, analytics, and launch management capabilities.
+A comprehensive launch automation platform that helps you launch products across multiple platforms (Product Hunt, Hacker News, Reddit, Indie Hackers) with a monetized backend API and MCP server integration.
+
+## Architecture
+
+```
+┌─────────────────┐     ┌──────────────┐     ┌─────────────────┐
+│   MCP Client    │────▶│  MCP Server  │────▶│  Convex Backend │
+│  (Claude, etc)  │     │   (Proxy)    │     │   (Database)    │
+└─────────────────┘     └──────────────┘     └─────────────────┘
+                              │                      │
+                              ▼                      ▼
+                        ┌──────────┐          ┌──────────────┐
+                        │  OAuth   │          │   Platform   │
+                        │   2.1    │          │   Adapters   │
+                        └──────────┘          └──────────────┘
+                                                     │
+                                              ┌──────┴──────┐
+                                              ▼             ▼
+                                        Product Hunt   Hacker News
+                                              ▼             ▼
+                                           Reddit    Indie Hackers
+```
 
 ## Features
 
-### 🚀 Launch Management
-- Create and schedule Product Hunt launches
-- Automated launch execution at optimal times
-- Hunter notification and coordination
-- Real-time launch monitoring
+### 🚀 Multi-Platform Support
+- **Product Hunt**: Full API integration with OAuth
+- **Hacker News**: Automated submissions and tracking
+- **Reddit**: Subreddit-specific launches
+- **Indie Hackers**: Community engagement tools
 
-### 🖼️ Image Processing
-- Batch image processing from folders
-- Automatic optimization for Product Hunt specifications
-- Multiple format support (gallery, thumbnail, banner)
-- Image collage creation
-- Watermark support
+### 💰 Monetization & Billing
+- Usage-based billing with Polar
+- Subscription tiers (Free, Starter, Pro)
+- API key management
+- Request tracking and limits
+
+### 🔐 Authentication & Security
+- OAuth 2.1 with PKCE support
+- JWT-based authentication
+- API key authentication
+- Rate limiting per tier
 
 ### 📊 Analytics & Tracking
-- Real-time vote and comment tracking
+- Real-time launch metrics
+- Engagement tracking
+- Competition analysis
 - Performance predictions
-- Competitor analysis
-- Optimal launch time recommendations
-- Historical performance comparison
 
-### 🤖 Automation Tools
-- Auto-reply to comments
-- Voter thanking system
-- Social media announcement generation
-- Launch checklist generation
+## Setup Instructions
 
-## Installation
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/launchpal.git
+cd launchpal
+```
+
+### 2. Set Up Convex Backend
 
 ```bash
+cd convex
 npm install
+npx convex dev  # For development
 ```
 
-## Configuration
+Create `.env.local`:
+```env
+POLAR_ORGANIZATION_TOKEN=your_polar_token
+POLAR_WEBHOOK_SECRET=your_webhook_secret
+```
 
-1. Copy `.env.example` to `.env`:
+Deploy to production:
 ```bash
-cp .env.example .env
+npx convex deploy
 ```
 
-2. Add your Product Hunt API credentials:
-   - Get credentials from [Product Hunt API](https://www.producthunt.com/v2/oauth/applications)
-   - Add `PRODUCTHUNT_CLIENT_ID` and `PRODUCTHUNT_CLIENT_SECRET` to your `.env` file
-   - Set your redirect URI in Product Hunt to `http://localhost:8080/callback`
+### 3. Configure Platform Credentials
+
+#### Product Hunt
+1. Go to [Product Hunt API](https://www.producthunt.com/v2/oauth/applications)
+2. Create a new application
+3. Set redirect URI: `https://launch.getfoundry.app/oauth/callback`
+4. Note your Client ID and Client Secret
+
+#### Other Platforms
+- **Hacker News**: Username and password
+- **Reddit**: Reddit App credentials
+- **Indie Hackers**: API key from settings
+
+### 4. Set Up MCP Server
+
+```bash
+cd mcp-server
+npm install
+npm run build
+```
+
+Create `.env`:
+```env
+LAUNCHPAL_API_KEY=your_api_key
+CONVEX_URL=https://your-app.convex.cloud
+LAUNCHPAL_API_URL=https://launch.getfoundry.app
+```
+
+### 5. Deploy to Smithery
+
+```bash
+# Install Smithery CLI
+npm install -g @smithery/cli
+
+# Login
+npx @smithery/cli login
+
+# Deploy
+smithery deploy .
+```
+
+Users can then install:
+```bash
+npx @smithery/cli install @yourusername/launchpal --client claude
+```
 
 ## Usage
 
-### Starting the Server
+### Via MCP Client (Claude, etc.)
+
+1. **Authenticate**:
+```
+Use the authenticate tool with your email and password
+```
+
+2. **Connect Platform**:
+```
+Connect Product Hunt with your Client ID and Secret
+```
+
+3. **Create Product**:
+```
+Create a product on Product Hunt with name, tagline, and description
+```
+
+4. **Schedule Launch**:
+```
+Schedule the launch for Tuesday 12:01 AM PST
+```
+
+5. **Track Metrics**:
+```
+Get launch metrics to see votes, comments, and ranking
+```
+
+### Via API
 
 ```bash
-npm run dev  # Development mode
-npm run build && npm start  # Production mode
+# Authenticate
+curl -X POST https://launch.getfoundry.app/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"password"}'
+
+# Create Product
+curl -X POST https://launch.getfoundry.app/api/products \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "platform": "producthunt",
+    "name": "My Product",
+    "tagline": "Amazing product",
+    "description": "Description here",
+    "website": "https://myproduct.com"
+  }'
 ```
 
-### Connecting with Claude Desktop
+## Subscription Tiers
 
-Add to your Claude Desktop configuration:
+### Free Tier
+- 100 requests/month
+- 1 platform connection
+- 3 products max
+- Basic analytics
 
-```json
-{
-  "mcpServers": {
-    "launchpal": {
-      "command": "node",
-      "args": ["/path/to/launchpal/dist/index.js"],
-      "env": {
-        "PRODUCTHUNT_CLIENT_ID": "your_client_id",
-        "PRODUCTHUNT_CLIENT_SECRET": "your_client_secret",
-        "AUTH_PORT": "8080"
-      }
-    }
-  }
-}
-```
+### Starter ($29/month)
+- 1,000 requests/month
+- 3 platform connections
+- 10 products max
+- Advanced analytics
+- Priority support
 
-### Authentication Flow
+### Pro ($99/month)
+- 10,000 requests/month
+- Unlimited platforms
+- Unlimited products
+- Real-time analytics
+- API access
+- Dedicated support
 
-1. **First Time Setup**: Use the `login_producthunt` tool to authenticate
-2. **Browser Opens**: A browser window will open for Product Hunt OAuth login
-3. **Automatic Token Management**: Tokens are stored securely and managed automatically
-4. **Check Status**: Use `check_auth_status` to verify authentication
-5. **Logout**: Use `logout_producthunt` to clear stored tokens
+## API Documentation
 
-## Available Tools
+### Authentication
+- OAuth 2.1 flow at `/oauth/authorize`
+- Token endpoint at `/oauth/token`
+- API key authentication via Bearer token
 
-### Authentication Tools
-
-#### login_producthunt
-Open browser to authenticate with Product Hunt via OAuth.
-
-```typescript
-// No parameters needed
-{}
-```
-
-#### check_auth_status
-Check current authentication status.
-
-```typescript
-// No parameters needed
-{}
-```
-
-#### logout_producthunt
-Logout and clear stored authentication tokens.
-
-```typescript
-// No parameters needed
-{}
-```
-
-### Product Management Tools
-
-#### create_product
-Create a new product on Product Hunt with media support (requires authentication).
-
-```typescript
-{
-  name: "My Product",
-  tagline: "Amazing product tagline",
-  description: "Detailed description",
-  website: "https://myproduct.com",
-  topics: ["productivity", "saas"],
-  media: ["/path/to/image1.jpg", "/path/to/image2.png"]
-}
-```
-
-### schedule_launch
-Schedule a product launch with hunter coordination.
-
-```typescript
-{
-  productId: "product_123",
-  launchDate: "2024-01-15T00:01:00Z",
-  hunters: ["hunter1", "hunter2"],
-  notifySubscribers: true
-}
-```
-
-### process_images
-Process and optimize images from a folder.
-
-```typescript
-{
-  folderPath: "/path/to/images",
-  outputFormat: "gallery",
-  maxWidth: 1270,
-  maxHeight: 760
-}
-```
-
-### track_launch
-Start real-time tracking of launch performance.
-
-```typescript
-{
-  productId: "product_123",
-  interval: 30  // minutes
-}
-```
-
-### generate_launch_report
-Generate comprehensive launch analytics report.
-
-```typescript
-{
-  productId: "product_123",
-  includeCompetitors: true
-}
-```
-
-### get_trending
-Get trending products on Product Hunt.
-
-```typescript
-{
-  period: "day",  // day, week, month
-  limit: 10
-}
-```
-
-### find_hunters
-Find top hunters for your product category.
-
-```typescript
-{
-  category: "productivity",
-  minFollowers: 1000
-}
-```
-
-### optimize_launch_time
-Get optimal launch timing recommendations.
-
-```typescript
-{
-  category: "saas",
-  targetAudience: "US"  // US, EU, ASIA, GLOBAL
-}
-```
-
-## Available Prompts
-
-- `launch_checklist` - Complete Product Hunt launch checklist
-- `product_description` - Generate compelling product descriptions
-- `hunter_outreach` - Templates for reaching out to hunters
-- `launch_announcement` - Social media announcement templates
-
-## Image Processing Features
-
-### Supported Formats
-- JPG/JPEG
-- PNG
-- GIF
-- WebP
-
-### Automatic Optimizations
-- Product Hunt gallery: 1270x760px
-- Thumbnails: 300x300px
-- Banners: 1920x600px
-- Quality optimization
-- File size reduction
-
-### Batch Processing
-Process entire folders of images with automatic format detection and optimization.
-
-## Analytics Features
-
-### Real-time Metrics
-- Vote velocity tracking
-- Engagement ratios
-- Rank monitoring
-- Conversion tracking
-
-### Predictive Analytics
-- Performance predictions
-- Optimal timing recommendations
-- Competitor comparison
-
-### Reporting
-- Comprehensive launch reports
-- Timeline visualizations
-- Export to JSON/CSV
-
-## Authentication & Security
-
-### OAuth 2.0 Flow
-The server uses Product Hunt's OAuth 2.0 flow for secure authentication:
-
-1. **No Manual Token Management**: Users don't need to manually handle access tokens
-2. **Secure Token Storage**: Tokens are stored locally in `.auth/tokens.json`
-3. **Automatic Token Refresh**: Tokens are refreshed automatically when needed
-4. **Browser-Based Login**: Standard OAuth flow through Product Hunt's login page
-
-### Security Features
-- Tokens are never exposed in logs or console output
-- State parameter validation prevents CSRF attacks
-- Tokens are stored with proper file permissions
-- Automatic cleanup on logout
-
-## Best Practices
-
-1. **Authentication First**: Always authenticate before using product management features
-2. **Launch Timing**: Tuesday 12:01 AM PST is typically optimal
-3. **Images**: Use high-quality images at 1270x760px for gallery
-4. **Hunters**: Reach out to hunters 1-2 weeks before launch
-5. **Engagement**: Reply to comments within first 2 hours
-6. **Promotion**: Coordinate social media posts for launch day
+### Endpoints
+- `POST /api/products` - Create product
+- `POST /api/launches` - Schedule launch
+- `GET /api/launches/:id/metrics` - Get metrics
+- `POST /api/platforms/:platform/connect` - Connect platform
+- `GET /api/usage` - Check usage and limits
 
 ## Development
 
+### Local Development
 ```bash
-npm run dev  # Start development server
-npm run build  # Build for production
-npm test  # Run tests
+# Convex backend
+cd convex
+npm run dev
+
+# MCP server
+cd mcp-server
+npm run dev
 ```
+
+### Testing
+```bash
+npm test
+```
+
+### Building
+```bash
+npm run build
+```
+
+## Environment Variables
+
+### Convex Backend
+- `CONVEX_DEPLOY_KEY` - Deployment key from Convex dashboard
+- `POLAR_ORGANIZATION_TOKEN` - Polar API token
+- `POLAR_WEBHOOK_SECRET` - Polar webhook secret
+
+### MCP Server
+- `LAUNCHPAL_API_KEY` - Your LaunchPal API key
+- `CONVEX_URL` - Convex deployment URL
+- `LAUNCHPAL_API_URL` - Backend API URL
+
+## Support
+
+- Documentation: [launch.getfoundry.app/docs](https://launch.getfoundry.app/docs)
+- Issues: [GitHub Issues](https://github.com/yourusername/launchpal/issues)
+- Email: support@getfoundry.app
 
 ## License
 
