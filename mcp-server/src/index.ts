@@ -18,7 +18,7 @@ dotenv.config();
 
 const configSchema = z.object({
   apiKey: z.string().optional(),
-  convexUrl: z.string().default('https://launch.convex.cloud'),
+  convexUrl: z.string().default('https://launchapi.getfoundry.app'),
   apiUrl: z.string().default('https://launch.getfoundry.app'),
   debugMode: z.boolean().default(false)
 });
@@ -35,7 +35,7 @@ class LaunchPalMCPServer {
   constructor() {
     this.config = configSchema.parse({
       apiKey: process.env.LAUNCHPAL_API_KEY,
-      convexUrl: process.env.CONVEX_URL || 'https://launch.convex.cloud',
+      convexUrl: process.env.CONVEX_URL || 'https://launchapi.getfoundry.app',
       apiUrl: process.env.LAUNCHPAL_API_URL || 'https://launch.getfoundry.app',
       debugMode: process.env.DEBUG === 'true'
     });
