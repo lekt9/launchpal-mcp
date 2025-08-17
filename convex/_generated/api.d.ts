@@ -13,7 +13,10 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as auth from "../auth.js";
 import type * as billing from "../billing.js";
+import type * as convex__generated_api from "../convex/_generated/api.js";
+import type * as convex__generated_server from "../convex/_generated/server.js";
 import type * as http from "../http.js";
 import type * as launches from "../launches.js";
 import type * as lib_adapters_ProductHuntAdapter from "../lib/adapters/ProductHuntAdapter.js";
@@ -33,7 +36,10 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   billing: typeof billing;
+  "convex/_generated/api": typeof convex__generated_api;
+  "convex/_generated/server": typeof convex__generated_server;
   http: typeof http;
   launches: typeof launches;
   "lib/adapters/ProductHuntAdapter": typeof lib_adapters_ProductHuntAdapter;

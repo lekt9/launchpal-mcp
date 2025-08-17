@@ -65,11 +65,16 @@ export const regenerateApiKey = mutation({
 });
 
 export const getProfile = query({
-  args: {
-    userId: v.id("users")
-  },
-  handler: async (ctx, args) => {
-    const user = await ctx.db.get(args.userId);
+  args: {},
+  handler: async (ctx) => {
+    const userId = await ctx.auth.getUserIdentity();
+    if (!userId) return null;
+    
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", q => q.eq("email", userId.email!))
+      .first();
+    
     if (!user) return null;
     
     // Get usage stats

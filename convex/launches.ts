@@ -118,7 +118,6 @@ export const saveMetrics = mutation({
 
 export const list = query({
   args: {
-    userId: v.id("users"),
     status: v.optional(v.union(
       v.literal("draft"),
       v.literal("scheduled"),
@@ -128,7 +127,17 @@ export const list = query({
     ))
   },
   handler: async (ctx, args) => {
-    let query = ctx.db.query("launches").withIndex("by_user", q => q.eq("userId", args.userId));
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", q => q.eq("email", identity.email!))
+      .first();
+    
+    if (!user) return [];
+    
+    let query = ctx.db.query("launches").withIndex("by_user", q => q.eq("userId", user._id));
     
     if (args.status) {
       const launches = await query.collect();

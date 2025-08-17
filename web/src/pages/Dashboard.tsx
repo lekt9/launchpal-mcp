@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
+import { useAuthActions } from '@convex-dev/auth/react'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input'
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react'
 
 export function Dashboard() {
+  const { signOut } = useAuthActions()
   const profile = useQuery(api.users.getProfile)
   const platforms = useQuery(api.platforms.list)
   const products = useQuery(api.products.list)
@@ -50,7 +52,7 @@ export function Dashboard() {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">{profile.email}</span>
-              <Button variant="outline" size="sm">Sign Out</Button>
+              <Button variant="outline" size="sm" onClick={() => signOut()}>Sign Out</Button>
             </div>
           </div>
         </div>

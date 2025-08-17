@@ -62,11 +62,20 @@ export const create = mutation({
 
 export const list = query({
   args: {
-    userId: v.id("users"),
     platform: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-    let query = ctx.db.query("products").withIndex("by_user", q => q.eq("userId", args.userId));
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", q => q.eq("email", identity.email!))
+      .first();
+    
+    if (!user) return [];
+    
+    let query = ctx.db.query("products").withIndex("by_user", q => q.eq("userId", user._id));
     
     if (args.platform) {
       const products = await query.collect();

@@ -61,13 +61,21 @@ export const disconnect = mutation({
 });
 
 export const list = query({
-  args: {
-    userId: v.id("users")
-  },
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", q => q.eq("email", identity.email!))
+      .first();
+    
+    if (!user) return [];
+    
     const credentials = await ctx.db
       .query("platformCredentials")
-      .withIndex("by_user", q => q.eq("userId", args.userId))
+      .withIndex("by_user", q => q.eq("userId", user._id))
       .collect();
     
     const platforms = [

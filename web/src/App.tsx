@@ -1,23 +1,56 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { ConvexProvider, ConvexReactClient } from 'convex/react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Authenticated, Unauthenticated } from 'convex/react'
+import { Login } from './pages/Login'
 import { OAuthConsent } from './pages/OAuthConsent'
 import { Dashboard } from './pages/Dashboard'
 import { Billing } from './pages/Billing'
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL || 'https://launch.convex.cloud')
-
 function App() {
   return (
-    <ConvexProvider client={convex}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/oauth/authorize" element={<OAuthConsent />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/billing" element={<Billing />} />
-          <Route path="/" element={<Dashboard />} />
-        </Routes>
-      </BrowserRouter>
-    </ConvexProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={
+          <Unauthenticated>
+            <Login />
+          </Unauthenticated>
+        } />
+        
+        <Route path="/oauth/authorize" element={<OAuthConsent />} />
+        
+        <Route path="/dashboard" element={
+          <>
+            <Authenticated>
+              <Dashboard />
+            </Authenticated>
+            <Unauthenticated>
+              <Navigate to="/login" />
+            </Unauthenticated>
+          </>
+        } />
+        
+        <Route path="/billing" element={
+          <>
+            <Authenticated>
+              <Billing />
+            </Authenticated>
+            <Unauthenticated>
+              <Navigate to="/login" />
+            </Unauthenticated>
+          </>
+        } />
+        
+        <Route path="/" element={
+          <>
+            <Authenticated>
+              <Dashboard />
+            </Authenticated>
+            <Unauthenticated>
+              <Navigate to="/login" />
+            </Unauthenticated>
+          </>
+        } />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

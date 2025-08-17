@@ -8,6 +8,8 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@auth/core": "^0.37.0",
+    "@convex-dev/auth": "^0.0.88",
     "convex": "^1.17.0",
     "hono": "^4.6.0"
   },
