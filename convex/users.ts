@@ -1,6 +1,5 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 
 export const getByEmail = query({
   args: {
@@ -16,20 +15,34 @@ export const getByEmail = query({
 
 export const updateSubscription = mutation({
   args: {
-    userId: v.id("users"),
+    email: v.optional(v.string()),
+    userId: v.optional(v.id("users")),
     subscription: v.string(),
     limits: v.object({
       monthlyRequests: v.number(),
       platforms: v.number(),
       products: v.number()
-    }),
-    polarCustomerId: v.union(v.string(), v.null())
+    })
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.userId, {
+    let user;
+    
+    if (args.userId) {
+      user = await ctx.db.get(args.userId);
+    } else if (args.email) {
+      user = await ctx.db
+        .query("users")
+        .withIndex("by_email", q => q.eq("email", args.email!))
+        .first();
+    } else {
+      throw new Error("Either userId or email must be provided");
+    }
+    
+    if (!user) throw new Error("User not found");
+    
+    await ctx.db.patch(user._id, {
       subscription: args.subscription,
-      limits: args.limits,
-      polarCustomerId: args.polarCustomerId
+      limits: args.limits
     });
     
     return { success: true };
@@ -52,15 +65,11 @@ export const regenerateApiKey = mutation({
 });
 
 export const getProfile = query({
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return null;
-    
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", q => q.eq("email", identity.email!))
-      .first();
-    
+  args: {
+    userId: v.id("users")
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
     if (!user) return null;
     
     // Get usage stats
@@ -70,9 +79,8 @@ export const getProfile = query({
     
     const usage = await ctx.db
       .query("usage")
-      .withIndex("by_user_timestamp", q => 
-        q.eq("userId", user._id).gte("timestamp", monthStart.getTime())
-      )
+      .withIndex("by_user", q => q.eq("userId", user._id))
+      .filter(q => q.gte(q.field("timestamp"), monthStart.getTime()))
       .collect();
     
     const totalRequests = usage.reduce((sum, u) => sum + u.requests, 0);

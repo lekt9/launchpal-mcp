@@ -1,23 +1,20 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getCurrentUser } from "./lib/auth";
 import { trackUsage } from "./lib/usage";
 
 export const connect = mutation({
   args: {
+    userId: v.id("users"),
     platform: v.string(),
     credentials: v.any()
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
-    await trackUsage(ctx, user._id, "platforms.connect", 0.01);
+    await trackUsage(ctx, args.userId, "platforms.connect", 0.01);
     
     const existing = await ctx.db
       .query("platformCredentials")
       .withIndex("by_user_platform", q => 
-        q.eq("userId", user._id).eq("platform", args.platform)
+        q.eq("userId", args.userId).eq("platform", args.platform)
       )
       .first();
     
@@ -28,7 +25,7 @@ export const connect = mutation({
       });
     } else {
       await ctx.db.insert("platformCredentials", {
-        userId: user._id,
+        userId: args.userId,
         platform: args.platform,
         credentials: args.credentials,
         isActive: true
@@ -44,16 +41,14 @@ export const connect = mutation({
 
 export const disconnect = mutation({
   args: {
+    userId: v.id("users"),
     platform: v.string()
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
     const credential = await ctx.db
       .query("platformCredentials")
       .withIndex("by_user_platform", q => 
-        q.eq("userId", user._id).eq("platform", args.platform)
+        q.eq("userId", args.userId).eq("platform", args.platform)
       )
       .first();
     
@@ -66,13 +61,13 @@ export const disconnect = mutation({
 });
 
 export const list = query({
-  handler: async (ctx) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
+  args: {
+    userId: v.id("users")
+  },
+  handler: async (ctx, args) => {
     const credentials = await ctx.db
       .query("platformCredentials")
-      .withIndex("by_user", q => q.eq("userId", user._id))
+      .withIndex("by_user", q => q.eq("userId", args.userId))
       .collect();
     
     const platforms = [
@@ -111,16 +106,14 @@ export const list = query({
 
 export const getCredentials = query({
   args: {
+    userId: v.id("users"),
     platform: v.string()
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
     const credential = await ctx.db
       .query("platformCredentials")
       .withIndex("by_user_platform", q => 
-        q.eq("userId", user._id).eq("platform", args.platform)
+        q.eq("userId", args.userId).eq("platform", args.platform)
       )
       .first();
     

@@ -1,9 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
-import { Hono } from "hono";
+import { Hono, Context } from "hono";
 import { cors } from "hono/cors";
-import { bearerAuth } from "hono/bearer-auth";
 
 const app = new Hono();
 
@@ -13,7 +11,7 @@ app.use('/*', cors({
 }));
 
 // OAuth 2.1 Authorization Endpoint
-app.get('/oauth/authorize', async (c) => {
+app.get('/oauth/authorize', async (c: Context) => {
   const { client_id, redirect_uri, state, scope, code_challenge, code_challenge_method } = c.req.query();
   
   // Return HTML login/consent page
@@ -66,7 +64,7 @@ app.get('/oauth/authorize', async (c) => {
 });
 
 // OAuth 2.1 Token Endpoint
-app.post('/oauth/token', async (c) => {
+app.post('/oauth/token', async (c: Context) => {
   const body = await c.req.parseBody();
   const { grant_type, code, client_id, client_secret, refresh_token, code_verifier } = body;
   
@@ -95,7 +93,7 @@ app.post('/oauth/token', async (c) => {
 });
 
 // OAuth Discovery Endpoint
-app.get('/.well-known/oauth-authorization-server', async (c) => {
+app.get('/.well-known/oauth-authorization-server', async (c: Context) => {
   return c.json({
     issuer: 'https://launch.getfoundry.app',
     authorization_endpoint: 'https://launch.getfoundry.app/oauth/authorize',
@@ -109,7 +107,7 @@ app.get('/.well-known/oauth-authorization-server', async (c) => {
 });
 
 // API Endpoints with Bearer Token Auth
-app.use('/api/*', async (c, next) => {
+app.use('/api/*', async (c: Context, next) => {
   const auth = c.req.header('Authorization');
   if (!auth || !auth.startsWith('Bearer ')) {
     return c.json({ error: 'Unauthorized' }, 401);
@@ -127,19 +125,19 @@ app.use('/api/*', async (c, next) => {
   }
 });
 
-app.post('/api/products', async (c) => {
+app.post('/api/products', async (c: Context) => {
   const body = await c.req.json();
   // Call Convex mutation
   return c.json({ success: true });
 });
 
-app.post('/api/launches', async (c) => {
+app.post('/api/launches', async (c: Context) => {
   const body = await c.req.json();
   // Call Convex mutation
   return c.json({ success: true });
 });
 
-app.get('/api/usage', async (c) => {
+app.get('/api/usage', async (c: Context) => {
   // Call Convex query
   return c.json({
     totalRequests: 50,

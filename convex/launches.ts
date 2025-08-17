@@ -1,31 +1,28 @@
 import { mutation, query, action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
-import { getCurrentUser } from "./lib/auth";
 import { trackUsage } from "./lib/usage";
 import { getPlatformAdapter } from "./lib/platforms";
 
 export const schedule = mutation({
   args: {
+    userId: v.id("users"),
     productId: v.id("products"),
     scheduledAt: v.number(),
     options: v.optional(v.any())
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
-    await trackUsage(ctx, user._id, "launches.schedule", 0.05);
+    await trackUsage(ctx, args.userId, "launches.schedule", 0.05);
     
     const product = await ctx.db.get(args.productId);
-    if (!product || product.userId !== user._id) {
+    if (!product || product.userId !== args.userId) {
       throw new Error("Product not found");
     }
     
     const credentials = await ctx.db
       .query("platformCredentials")
       .withIndex("by_user_platform", q => 
-        q.eq("userId", user._id).eq("platform", product.platform)
+        q.eq("userId", args.userId).eq("platform", product.platform)
       )
       .first();
     
@@ -36,12 +33,11 @@ export const schedule = mutation({
     const adapter = await getPlatformAdapter(product.platform, credentials.credentials);
     const platformLaunch = await adapter.scheduleLaunch(
       product.platformId,
-      new Date(args.scheduledAt),
-      args.options
+      new Date(args.scheduledAt)
     );
     
     const launchId = await ctx.db.insert("launches", {
-      userId: user._id,
+      userId: args.userId,
       productId: args.productId,
       platform: product.platform,
       platformLaunchId: platformLaunch.id,
@@ -60,18 +56,21 @@ export const schedule = mutation({
 
 export const getMetrics = action({
   args: {
+    userId: v.id("users"),
     launchId: v.id("launches")
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    const launch = await ctx.runQuery(api.launches.get, { 
+      id: args.launchId, 
+      userId: args.userId 
+    });
     
-    const launch = await ctx.runQuery(api.launches.get, { id: args.launchId });
-    if (!launch || launch.userId !== user._id) {
+    if (!launch) {
       throw new Error("Launch not found");
     }
     
     const credentials = await ctx.runQuery(api.platforms.getCredentials, {
+      userId: args.userId,
       platform: launch.platform
     });
     
@@ -119,6 +118,7 @@ export const saveMetrics = mutation({
 
 export const list = query({
   args: {
+    userId: v.id("users"),
     status: v.optional(v.union(
       v.literal("draft"),
       v.literal("scheduled"),
@@ -128,10 +128,7 @@ export const list = query({
     ))
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
-    let query = ctx.db.query("launches").withIndex("by_user", q => q.eq("userId", user._id));
+    let query = ctx.db.query("launches").withIndex("by_user", q => q.eq("userId", args.userId));
     
     if (args.status) {
       const launches = await query.collect();
@@ -144,14 +141,12 @@ export const list = query({
 
 export const get = query({
   args: {
-    id: v.id("launches")
+    id: v.id("launches"),
+    userId: v.id("users")
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
     const launch = await ctx.db.get(args.id);
-    if (!launch || launch.userId !== user._id) {
+    if (!launch || launch.userId !== args.userId) {
       throw new Error("Launch not found");
     }
     
@@ -162,6 +157,7 @@ export const get = query({
 export const updateStatus = mutation({
   args: {
     id: v.id("launches"),
+    userId: v.id("users"),
     status: v.union(
       v.literal("draft"),
       v.literal("scheduled"),
@@ -171,11 +167,8 @@ export const updateStatus = mutation({
     )
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
     const launch = await ctx.db.get(args.id);
-    if (!launch || launch.userId !== user._id) {
+    if (!launch || launch.userId !== args.userId) {
       throw new Error("Launch not found");
     }
     

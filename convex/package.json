@@ -8,13 +8,8 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@convex-dev/auth": "^0.0.71",
-    "@convex-dev/polar": "^0.1.0",
-    "@convex-dev/rate-limiter": "^0.1.0",
     "convex": "^1.17.0",
-    "convex-helpers": "^0.1.58",
-    "hono": "^4.6.0",
-    "stripe": "^17.5.0"
+    "hono": "^4.6.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

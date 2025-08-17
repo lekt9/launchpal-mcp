@@ -34,9 +34,8 @@ export async function trackUsage(
   
   const monthlyUsage = await ctx.db
     .query("usage")
-    .withIndex("by_user_timestamp", q => 
-      q.eq("userId", userId).gte("timestamp", monthStart.getTime())
-    )
+    .withIndex("by_user", q => q.eq("userId", userId))
+    .filter(q => q.gte(q.field("timestamp"), monthStart.getTime()))
     .collect();
   
   const totalRequests = monthlyUsage.reduce((sum, u) => sum + u.requests, 0);
@@ -54,9 +53,8 @@ export async function getUsageStats(ctx: MutationCtx, userId: Id<"users">) {
   
   const usage = await ctx.db
     .query("usage")
-    .withIndex("by_user_timestamp", q => 
-      q.eq("userId", userId).gte("timestamp", monthStart.getTime())
-    )
+    .withIndex("by_user", q => q.eq("userId", userId))
+    .filter(q => q.gte(q.field("timestamp"), monthStart.getTime()))
     .collect();
   
   const totalRequests = usage.reduce((sum, u) => sum + u.requests, 0);

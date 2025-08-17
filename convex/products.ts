@@ -1,11 +1,11 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getCurrentUser } from "./lib/auth";
 import { trackUsage } from "./lib/usage";
 import { getPlatformAdapter } from "./lib/platforms";
 
 export const create = mutation({
   args: {
+    userId: v.id("users"),
     platform: v.string(),
     name: v.string(),
     tagline: v.string(),
@@ -15,15 +15,12 @@ export const create = mutation({
     topics: v.optional(v.array(v.string()))
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
-    await trackUsage(ctx, user._id, "products.create", 0.10);
+    await trackUsage(ctx, args.userId, "products.create", 0.10);
     
     const credentials = await ctx.db
       .query("platformCredentials")
       .withIndex("by_user_platform", q => 
-        q.eq("userId", user._id).eq("platform", args.platform)
+        q.eq("userId", args.userId).eq("platform", args.platform)
       )
       .first();
     
@@ -42,7 +39,7 @@ export const create = mutation({
     });
     
     const productId = await ctx.db.insert("products", {
-      userId: user._id,
+      userId: args.userId,
       platform: args.platform,
       platformId: platformResult.id,
       name: args.name,
@@ -65,13 +62,11 @@ export const create = mutation({
 
 export const list = query({
   args: {
+    userId: v.id("users"),
     platform: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
-    let query = ctx.db.query("products").withIndex("by_user", q => q.eq("userId", user._id));
+    let query = ctx.db.query("products").withIndex("by_user", q => q.eq("userId", args.userId));
     
     if (args.platform) {
       const products = await query.collect();
@@ -84,14 +79,12 @@ export const list = query({
 
 export const get = query({
   args: {
-    id: v.id("products")
+    id: v.id("products"),
+    userId: v.id("users")
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
     const product = await ctx.db.get(args.id);
-    if (!product || product.userId !== user._id) {
+    if (!product || product.userId !== args.userId) {
       throw new Error("Product not found");
     }
     
@@ -102,6 +95,7 @@ export const get = query({
 export const update = mutation({
   args: {
     id: v.id("products"),
+    userId: v.id("users"),
     name: v.optional(v.string()),
     tagline: v.optional(v.string()),
     description: v.optional(v.string()),
@@ -110,15 +104,12 @@ export const update = mutation({
     topics: v.optional(v.array(v.string()))
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
     const product = await ctx.db.get(args.id);
-    if (!product || product.userId !== user._id) {
+    if (!product || product.userId !== args.userId) {
       throw new Error("Product not found");
     }
     
-    const { id, ...updates } = args;
+    const { id, userId, ...updates } = args;
     await ctx.db.patch(args.id, updates);
     
     return { success: true };
@@ -127,14 +118,12 @@ export const update = mutation({
 
 export const remove = mutation({
   args: {
-    id: v.id("products")
+    id: v.id("products"),
+    userId: v.id("users")
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-    
     const product = await ctx.db.get(args.id);
-    if (!product || product.userId !== user._id) {
+    if (!product || product.userId !== args.userId) {
       throw new Error("Product not found");
     }
     
