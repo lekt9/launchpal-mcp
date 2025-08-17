@@ -56,7 +56,11 @@ const plans = [
 ]
 
 export function Billing() {
-  const subscription = useQuery(api.billing.getSubscription)
+  // For now, we'll use a placeholder userId - in production this would come from auth
+  const userId = "placeholder_user_id" as any // This would normally come from auth context
+  const isAuthenticated = true // Placeholder for auth status
+  
+  const subscription = useQuery(api.billing.getSubscription, isAuthenticated ? { userId } : "skip")
   const createCheckout = useAction(api.billing.createCheckoutSession)
   const cancelSubscription = useAction(api.billing.cancelSubscription)
   
@@ -69,6 +73,7 @@ export function Billing() {
     setLoading(plan)
     try {
       const result = await createCheckout({
+        userId,
         plan: plan as 'starter' | 'pro',
         interval: billingPeriod
       })
@@ -85,7 +90,7 @@ export function Billing() {
   const handleCancel = async () => {
     setLoading('cancel')
     try {
-      await cancelSubscription()
+      await cancelSubscription({ userId })
     } catch (error) {
       console.error('Failed to cancel:', error)
     } finally {

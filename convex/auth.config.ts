@@ -1,6 +1,11 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+// Default export for Convex auth configuration
+export default {
+  providers: []
+};
+
 export const signIn = mutation({
   args: {
     email: v.string(),

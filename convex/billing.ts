@@ -1,4 +1,4 @@
-import { mutation, query, action } from "./_generated/server";
+import { query, action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { getUserById } from "./lib/auth";
@@ -9,7 +9,7 @@ export const createCheckoutSession = action({
     plan: v.union(v.literal("starter"), v.literal("pro")),
     interval: v.union(v.literal("monthly"), v.literal("yearly"))
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     // In production, integrate with Stripe/Polar
     // For now, return a mock checkout URL
     return {
@@ -28,7 +28,7 @@ export const handleWebhook = action({
     switch (args.event) {
       case "subscription.created":
       case "subscription.updated": {
-        const { customer_email, product_id, status } = args.data;
+        const { customer_email, product_id } = args.data;
         
         // Update user subscription in database
         await ctx.runMutation(api.users.updateSubscription, {

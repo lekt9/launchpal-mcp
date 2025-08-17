@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery, useMutation } from 'convex/react'
+import { useQuery } from 'convex/react'
 import { api } from '../../../convex/_generated/api'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { Button } from '../components/ui/button'
@@ -18,12 +18,14 @@ import {
   AlertCircle
 } from 'lucide-react'
 
+import { Layout } from '../components/Layout'
+
 export function Dashboard() {
   const { signOut } = useAuthActions()
   const profile = useQuery(api.users.getProfile)
   const platforms = useQuery(api.platforms.list)
-  const products = useQuery(api.products.list)
-  const launches = useQuery(api.launches.list)
+  const products = useQuery(api.products.list, {})
+  const launches = useQuery(api.launches.list, {})
   
   const [copiedApiKey, setCopiedApiKey] = useState(false)
   
@@ -42,23 +44,18 @@ export function Dashboard() {
   const usagePercent = profile.usage.requests / profile.limits.monthlyRequests * 100
   
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Rocket className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold">LaunchPal Dashboard</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">{profile.email}</span>
-              <Button variant="outline" size="sm" onClick={() => signOut()}>Sign Out</Button>
-            </div>
+    <Layout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Rocket className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl font-bold">Dashboard</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">{profile.email}</span>
+            <Button variant="outline" size="sm" onClick={() => signOut()}>Sign Out</Button>
           </div>
         </div>
-      </div>
-      
-      <div className="container mx-auto px-4 py-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* Usage Card */}
           <Card>
@@ -210,6 +207,6 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </Layout>
   )
 }

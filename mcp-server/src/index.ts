@@ -31,6 +31,7 @@ class LaunchPalMCPServer {
   private convexClient: ConvexHttpClient;
   private config: Config;
   private authToken?: string;
+  private apiClient: any;
 
   constructor() {
     this.config = configSchema.parse({
@@ -58,6 +59,14 @@ class LaunchPalMCPServer {
     if (this.config.apiKey) {
       this.convexClient.setAuth(this.config.apiKey);
     }
+
+    // Initialize axios client for API calls
+    this.apiClient = axios.create({
+      baseURL: this.config.apiUrl,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
     this.setupHandlers();
   }

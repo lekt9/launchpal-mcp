@@ -272,7 +272,7 @@ export class LaunchManager {
 
     for (const image of processedImages.images) {
       if (image.processedPath.includes('gallery')) {
-        assets.gallery.push(image.processedPath);
+        assets.gallery.push(image.processedPath as never);
       } else if (image.processedPath.includes('thumbnail')) {
         assets.thumbnail = image.processedPath;
       } else if (image.processedPath.includes('banner')) {

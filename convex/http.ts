@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { Hono, Context } from "hono";
+import { Hono } from "hono";
+import type { Context } from "hono";
 import { cors } from "hono/cors";
 
 const app = new Hono();
@@ -66,7 +67,7 @@ app.get('/oauth/authorize', async (c: Context) => {
 // OAuth 2.1 Token Endpoint
 app.post('/oauth/token', async (c: Context) => {
   const body = await c.req.parseBody();
-  const { grant_type, code, client_id, client_secret, refresh_token, code_verifier } = body;
+  const { grant_type } = body;
   
   // Handle authorization code flow
   if (grant_type === 'authorization_code') {
@@ -113,7 +114,7 @@ app.use('/api/*', async (c: Context, next) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
   
-  const token = auth.substring(7);
+  // const token = auth.substring(7);
   
   // Verify token and set user context
   try {
@@ -126,13 +127,13 @@ app.use('/api/*', async (c: Context, next) => {
 });
 
 app.post('/api/products', async (c: Context) => {
-  const body = await c.req.json();
+  // const body = await c.req.json();
   // Call Convex mutation
   return c.json({ success: true });
 });
 
 app.post('/api/launches', async (c: Context) => {
-  const body = await c.req.json();
+  // const body = await c.req.json();
   // Call Convex mutation
   return c.json({ success: true });
 });
@@ -165,7 +166,7 @@ const http = httpRouter();
 http.route({
   path: "/*",
   method: "GET",
-  handler: httpAction(async (ctx, request) => {
+  handler: httpAction(async (_ctx, request) => {
     const response = await app.fetch(request);
     return response;
   })
@@ -174,7 +175,7 @@ http.route({
 http.route({
   path: "/*",
   method: "POST",
-  handler: httpAction(async (ctx, request) => {
+  handler: httpAction(async (_ctx, request) => {
     const response = await app.fetch(request);
     return response;
   })

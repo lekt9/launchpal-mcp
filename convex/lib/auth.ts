@@ -1,7 +1,7 @@
-import { QueryCtx, MutationCtx } from "../_generated/server";
-import { Id } from "../_generated/dataModel";
+import type { QueryCtx, MutationCtx } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
 
-export async function getCurrentUser(ctx: QueryCtx | MutationCtx) {
+export async function getCurrentUser(_ctx: QueryCtx | MutationCtx) {
   // In a real app, this would check the auth token
   // For now, return null (auth handled differently)
   return null;

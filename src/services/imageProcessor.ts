@@ -176,7 +176,7 @@ export class ImageProcessor {
           const processed = await this.processImage(inputPath, {
             ...options,
             ...size,
-          });
+          } as ProcessOptions);
           processedImages.push(processed);
           formats.add(size.format);
         }
