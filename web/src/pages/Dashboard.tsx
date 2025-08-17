@@ -101,7 +101,7 @@ export function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {launches?.filter(l => l.status === 'active').length || 0}
+                {launches?.filter((l: any) => l.status === 'active').length || 0}
               </div>
               <p className="text-xs text-muted-foreground">
                 Total: {launches?.length || 0} launches
@@ -182,7 +182,7 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
-              {platforms?.map(platform => (
+              {platforms?.map((platform: any) => (
                 <div key={platform.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">
                     {platform.connected ? (

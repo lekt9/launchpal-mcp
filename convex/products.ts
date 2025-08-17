@@ -14,12 +14,12 @@ export const create = mutation({
     media: v.optional(v.array(v.string())),
     topics: v.optional(v.array(v.string()))
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx: any, args: any) => {
     await trackUsage(ctx, args.userId, "products.create", 0.10);
     
     const credentials = await ctx.db
       .query("platformCredentials")
-      .withIndex("by_user_platform", q => 
+      .withIndex("by_user_platform", (q: any) => 
         q.eq("userId", args.userId).eq("platform", args.platform)
       )
       .first();
@@ -64,22 +64,22 @@ export const list = query({
   args: {
     platform: v.optional(v.string())
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx: any, args: any) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
     
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", q => q.eq("email", identity.email!))
+      .withIndex("by_email", (q: any) => q.eq("email", identity.email!))
       .first();
     
     if (!user) return [];
     
-    let query = ctx.db.query("products").withIndex("by_user", q => q.eq("userId", user._id));
+    let query = ctx.db.query("products").withIndex("by_user", (q: any) => q.eq("userId", user._id));
     
     if (args.platform) {
       const products = await query.collect();
-      return products.filter(p => p.platform === args.platform);
+      return products.filter((p: any) => p.platform === args.platform);
     }
     
     return await query.collect();
@@ -91,7 +91,7 @@ export const get = query({
     id: v.id("products"),
     userId: v.id("users")
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx: any, args: any) => {
     const product = await ctx.db.get(args.id);
     if (!product || product.userId !== args.userId) {
       throw new Error("Product not found");
@@ -112,7 +112,7 @@ export const update = mutation({
     media: v.optional(v.array(v.string())),
     topics: v.optional(v.array(v.string()))
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx: any, args: any) => {
     const product = await ctx.db.get(args.id);
     if (!product || product.userId !== args.userId) {
       throw new Error("Product not found");
@@ -130,7 +130,7 @@ export const remove = mutation({
     id: v.id("products"),
     userId: v.id("users")
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx: any, args: any) => {
     const product = await ctx.db.get(args.id);
     if (!product || product.userId !== args.userId) {
       throw new Error("Product not found");
@@ -138,7 +138,7 @@ export const remove = mutation({
     
     const launches = await ctx.db
       .query("launches")
-      .withIndex("by_product", q => q.eq("productId", args.id))
+      .withIndex("by_product", (q: any) => q.eq("productId", args.id))
       .collect();
     
     if (launches.length > 0) {

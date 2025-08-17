@@ -5,10 +5,10 @@ export const getByEmail = query({
   args: {
     email: v.string()
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx: any, args: any) => {
     return await ctx.db
       .query("users")
-      .withIndex("by_email", q => q.eq("email", args.email))
+      .withIndex("by_email", (q: any) => q.eq("email", args.email))
       .first();
   }
 });
@@ -24,7 +24,7 @@ export const updateSubscription = mutation({
       products: v.number()
     })
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx: any, args: any) => {
     let user;
     
     if (args.userId) {
@@ -32,7 +32,7 @@ export const updateSubscription = mutation({
     } else if (args.email) {
       user = await ctx.db
         .query("users")
-        .withIndex("by_email", q => q.eq("email", args.email!))
+        .withIndex("by_email", (q: any) => q.eq("email", args.email!))
         .first();
     } else {
       throw new Error("Either userId or email must be provided");
@@ -53,7 +53,7 @@ export const regenerateApiKey = mutation({
   args: {
     userId: v.id("users")
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx: any, args: any) => {
     const newApiKey = generateApiKey();
     
     await ctx.db.patch(args.userId, {
@@ -72,7 +72,7 @@ export const getProfile = query({
     
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", q => q.eq("email", userId.email!))
+      .withIndex("by_email", (q: any) => q.eq("email", userId.email!))
       .first();
     
     if (!user) return null;
@@ -84,12 +84,12 @@ export const getProfile = query({
     
     const usage = await ctx.db
       .query("usage")
-      .withIndex("by_user", q => q.eq("userId", user._id))
+      .withIndex("by_user", (q: any) => q.eq("userId", user._id))
       .filter(q => q.gte(q.field("timestamp"), monthStart.getTime()))
       .collect();
     
-    const totalRequests = usage.reduce((sum, u) => sum + u.requests, 0);
-    const totalCost = usage.reduce((sum, u) => sum + u.cost, 0);
+    const totalRequests = usage.reduce((sum: any, u: any) => sum + u.requests, 0);
+    const totalCost = usage.reduce((sum: any, u: any) => sum + u.cost, 0);
     
     return {
       id: user._id,

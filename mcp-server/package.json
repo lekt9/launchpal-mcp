@@ -12,6 +12,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@convex-dev/auth": "^0.0.88",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "axios": "^1.7.9",
     "convex": "^1.17.0",

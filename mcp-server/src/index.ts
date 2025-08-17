@@ -68,6 +68,7 @@ class LaunchPalMCPServer {
       }
     });
 
+    this.setupErrorHandling();
     this.setupHandlers();
   }
 
